@@ -1,0 +1,21 @@
+# Python / Poetry
+__pycache__/
+*.py[cod]
+.venv/
+dist/
+*.egg-info/
+
+# Environment Variables (Security Critical)
+.env
+
+# Data & Database (Don't commit 1GB of vectors)
+data/
+chroma_db/
+
+# IDE Settings
+.vscode/
+.idea/
+
+# Mac/Windows Junk
+.DS_Store
+Thumbs.db
