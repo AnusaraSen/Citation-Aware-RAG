@@ -1,7 +1,7 @@
 import os
 import time
 from pathlib import Path
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Optional
 from collections import defaultdict
 
 # Disable Telemetry
@@ -13,6 +13,7 @@ from langchain_community.vectorstores.chroma import Chroma
 from langchain_community.embeddings.huggingface import HuggingFaceEmbeddings
 from rank_bm25 import BM25Okapi  
 from src.core.types import Document
+from src.core.config import Config
 
 class VectorStore:
     """
@@ -24,7 +25,7 @@ class VectorStore:
     3. Reciprocal Rank Fusion (RRF) to merge results
     """
     
-    def __init__(self, persist_dir: str = "data/chroma_db", reset: bool = False):
+    def __init__(self, persist_dir: Optional [str] = None, reset: bool = False):
         """
         Initialize the Vector Store with optional database reset.
         
@@ -33,9 +34,12 @@ class VectorStore:
             reset: If True, wipes the existing collection before initialization.
                    Use with caution - this is irreversible!
         """
+        if persist_dir is None:
+            persist_dir = str(Config.CHROMA_PERSIST_DIR)
+        
         self.persist_dir = str(Path(persist_dir).resolve())  # Use absolute path
-        self.collection_name = "rag_citation_collection"
-        self.embedding_fn = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+        self.collection_name = Config.COLLECTION_NAME
+        self.embedding_fn = HuggingFaceEmbeddings(model_name=Config.EMBEDDING_MODEL)
         
         # Create persistent client
         self.chroma_client = chromadb.PersistentClient(
@@ -304,7 +308,7 @@ class VectorStore:
             
 if __name__ == "__main__":
     # Check Vector Store Status
-    store = VectorStore(persist_dir="data/chroma_db")
+    store = VectorStore()
     
     doc_count = store.get_document_count()
     print(f"\n📊 Vector Store Status:")

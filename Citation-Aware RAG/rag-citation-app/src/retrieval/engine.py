@@ -1,8 +1,9 @@
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from pathlib import Path
 from langchain_community.chat_models.ollama import ChatOllama
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
+from src.core.config import Config
 from src.storage.vector_store import VectorStore
 from src.retrieval.modifiers import AdvancedRAGModifiers 
 from src.core.types import Document
@@ -12,17 +13,18 @@ class RAGEngine:
     Professional RAG Engine with HyDE and Reranking.
     """
     
-    def __init__(self, model_name: str = "llama3"):
-        # Ensure we use absolute path relative to project root
-        project_root = Path(__file__).parent.parent.parent
-        persist_dir = project_root / "data" / "chroma_db"
+    def __init__(self, model_name: Optional [str] = None):
+        # Use Config values
+        if model_name is None:
+            model_name = Config.MODEL_NAME
+            
         self.store = VectorStore()
         
         print(f"Initializing Llama 3 Brain ({model_name})...")
         self.llm = ChatOllama(
-            base_url="http://localhost:11434", 
+            base_url=Config.OLLAMA_BASE_URL, 
             model=model_name,
-            temperature=0.2,  # Slightly increased for more natural responses
+            temperature=Config.TEMPERATURE,
             keep_alive="1h"
         )
         
@@ -107,7 +109,7 @@ Provide a clear, well-structured answer with citations:""")
 
         # --- Step 3: High-Precision Reranking ---
         print("   [Reranking] Applying Cross-Encoder reranking...")
-        top_docs = self.modifiers.rerank_documents(user_question, results, top_k=15)
+        top_docs = self.modifiers.rerank_documents(user_question, results, top_k=Config.RERANK_K)
         
         # Debug: Log top reranked document
         if top_docs:

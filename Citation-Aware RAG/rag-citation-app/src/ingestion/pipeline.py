@@ -7,14 +7,7 @@ from src.storage.vector_store import VectorStore
 
 class IngestionPipeline:
     """
-    The Orchestrator for the RAG ETL process.
-    
-    Responsibilities:
-    1. EXTRACT: Load raw text from PDFs.
-    2. TRANSFORM: Split text semantically and preserve metadata.
-    3. LOAD: Push vectors into the ChromaDB.
-    
-    This adheres to the 'Modular RAG' architecture described in the project guide.
+    Orchestrates ETL: Extract PDFs, transform split, load vectors into ChromaDB.
     """
     
     def __init__(self):
@@ -31,7 +24,7 @@ class IngestionPipeline:
         if not path.exists():
             raise FileNotFoundError(f"File not found: {file_path}")
             
-        print(f"\n🚀 [Pipeline] Starting ingestion for: {path.name}")
+        print(f"\n [Pipeline] Starting ingestion for: {path.name}")
         
         # --- Step 1: Extract ---
         loader = PDFLoader(path)
@@ -42,13 +35,13 @@ class IngestionPipeline:
             print("   ⚠️ Warning: No text extracted. Skipping.")
             return []
         
-        # Optional: Separate TOC from regular pages for different processing
+        # OSeparate TOC from regular pages for different processing
         toc_docs = [doc for doc in raw_docs if doc.metadata.get("is_toc", False)]
         page_docs = [doc for doc in raw_docs if not doc.metadata.get("is_toc", False)]
         
-        print(f"   [Extract] Found {len(toc_docs)} TOC, {len(page_docs)} pages.")
-        print(f"   [Extract] Total blocks: {sum(doc.metadata.get('block_count', 0) for doc in page_docs)}")
-        print(f"   [Extract] Total tables: {sum(doc.metadata.get('table_count', 0) for doc in page_docs)}")
+        print(f"    Found {len(toc_docs)} TOC, {len(page_docs)} pages.")
+        print(f"    Total blocks: {sum(doc.metadata.get('block_count', 0) for doc in page_docs)}")
+        print(f"    Total tables: {sum(doc.metadata.get('table_count', 0) for doc in page_docs)}")
 
 
         # --- Step 2: Transform ---
@@ -65,14 +58,3 @@ class IngestionPipeline:
         print(f"✅ [Pipeline] Finished processing {path.name}")
         return chunks
 
-# --- Smoke Test ---
-if __name__ == "__main__":
-    import sys
-    
-    # This allows us to run the pipeline from the command line:
-    # poetry run python -m src.ingestion.pipeline "data/MyFile.pdf"
-    if len(sys.argv) > 1:
-        pipeline = IngestionPipeline()
-        pipeline.run(sys.argv[1])
-    else:
-        print("Usage: python -m src.ingestion.pipeline <path_to_pdf>")

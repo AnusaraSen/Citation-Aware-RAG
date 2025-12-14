@@ -1,7 +1,8 @@
-from typing import List
+from typing import List, Optional
 from langchain_experimental.text_splitter import SemanticChunker
 from langchain_community.embeddings.huggingface import HuggingFaceEmbeddings
 from src.core.types import Document
+from src.core.config import Config
 
 class DocumentSplitter:
     """
@@ -12,7 +13,11 @@ class DocumentSplitter:
     
     """
 
-    def __init__(self, model_name: str = "all-MiniLM-L6-v2"):
+    def __init__(self, model_name: Optional[str] = None):
+        # Use Config value if not specified
+        if model_name is None:
+            model_name = Config.EMBEDDING_MODEL
+            
         # We use a small, fast local model for the splitting process.
         # This runs on your CPU/GPU.
         print(f"Loading embedding model '{model_name}' for semantic splitting...")
@@ -40,7 +45,7 @@ class DocumentSplitter:
 
             # 3. Re-wrap chunks into strict Document objects
             for i, chunk_text in enumerate(chunks):
-                # Create a derived ID: "ParentID_ChunkIndex"
+                # creates derived chunk IDs by appending a chunk index to the parent ID (loader.py)
                 new_id = f"{doc.id}_chunk_{i}"
                 
                 new_doc = Document(
@@ -58,4 +63,3 @@ class DocumentSplitter:
         
         print(f"Split {len(documents)} pages into {len(chunked_docs)} semantic chunks.")
         return chunked_docs
-

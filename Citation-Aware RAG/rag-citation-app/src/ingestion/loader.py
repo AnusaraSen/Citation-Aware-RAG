@@ -1,24 +1,14 @@
-import fitz  # PyMuPDF
+import fitz  
 import hashlib
 from typing import List, Dict, Any, Tuple, Union
 from pathlib import Path
 from src.core.types import Document
 
-# Type alias for PyMuPDF block structure
 # Block format: (x0: float, y0: float, x1: float, y1: float, text: str, block_no: int, block_type: int)
 BlockTuple = Tuple[float, float, float, float, str, int, int]
 
 class PDFLoader:
-    """
-    Professional PDF Loader with Layout-Aware Extraction.
     
-    Features:
-    - Block-based text extraction with spatial sorting
-    - Header/Footer noise filtering
-    - Table of Contents (TOC) extraction
-    - Table detection and Markdown conversion
-    - Multi-column layout preservation
-    """
     
     # Layout constants (in pixels)
     HEADER_THRESHOLD = 50  # Ignore blocks in top 50px
@@ -59,7 +49,7 @@ class PDFLoader:
             text_blocks.append(block)
         
         # Sort: Primary by vertical position (y0), Secondary by horizontal (x0)
-        # This handles multi-column layouts correctly
+        # make a grid like structure to sort the numbers properly
         sorted_blocks = sorted(text_blocks, key=lambda b: (round(b[1], -1), b[0]))
         
         return sorted_blocks
@@ -86,7 +76,7 @@ class PDFLoader:
                 # Convert to Markdown
                 markdown_lines = []
                 
-                # Header row
+                # akes the first row of table_data (assumed to be the header row) and converts it to a Markdown table header plus the required separator row of column dashes.
                 if len(table_data) > 0:
                     header = table_data[0]
                     markdown_lines.append("| " + " | ".join(str(cell) if cell else "" for cell in header) + " |")
@@ -98,7 +88,7 @@ class PDFLoader:
                 
                 markdown_table = "\n".join(markdown_lines)
                 
-                # Store with vertical coordinates for positioning
+                # Store with vertical coordinates for positioning the table
                 bbox = table.bbox
                 tables_map[(bbox[1], bbox[3])] = markdown_table
                 
@@ -134,27 +124,14 @@ class PDFLoader:
         except Exception as e:
             return f"**Table of Contents**\n\n_Error extracting TOC: {str(e)}_"
 
-    def load(self) -> List[Document]:
-        """
-        Parses the PDF with advanced layout-aware extraction.
+    def load(self) -> List[Document]: #List of Document objects with rich metadata
         
-        Process:
-        1. Extract and inject TOC as first document
-        2. For each page:
-           - Detect tables and convert to Markdown
-           - Extract text blocks with spatial sorting
-           - Filter header/footer noise
-           - Merge tables and text in reading order
-        
-        Returns:
-            List of Document objects with rich metadata
-        """
         docs: List[Document] = []
         
         try:
             with fitz.open(self.file_path) as pdf_doc:
                 
-                # --- Step 1: Inject TOC as first document ---
+                # ---  Inject TOC as first document ---
                 toc_content = self.get_toc_summary()
                 toc_doc = Document(
                     id=hashlib.md5(f"{self.file_path.name}_toc".encode()).hexdigest(),
@@ -172,8 +149,8 @@ class PDFLoader:
                 # --- Step 2: Process each page ---
                 for page_num in range(len(pdf_doc)):
                     page = pdf_doc.load_page(page_num)
-                    page_rect = page.rect
-                    page_height = page_rect.height
+                    page_rect = page.rect # Page’s bounding rectangle
+                    page_height = page_rect.height # height of the page in PDF units
                     
                     # Extract tables as Markdown
                     tables_map = self._extract_tables_as_markdown(page)
@@ -181,8 +158,17 @@ class PDFLoader:
                     # Extract text blocks with proper type casting
                     raw_blocks = page.get_text("blocks")
                     # Cast to our typed structure
+
+                    '''
+                           x0 , y0 - Top-left corner of the text block
+                           x1 , y1 - Bottom-right corner of the text block
+                           text    - The actual text content of the block
+                           block_no - Unique identifier for the block on the page
+                           block_type - Integer indicating the type of block (0=text, 1=image, etc.)
+                    '''
                     typed_blocks: List[BlockTuple] = [
                         (
+                            
                             float(b[0]),  # x0
                             float(b[1]),  # y0
                             float(b[2]),  # x1
@@ -207,12 +193,12 @@ class PDFLoader:
                         
                         # Check if this block overlaps with a table
                         is_in_table = False
-                        for (table_y0, table_y1) in table_positions:
-                            if table_y0 <= y0 <= table_y1 or table_y0 <= y1 <= table_y1:
+                        for (table_y0, table_y1) in table_positions: 
+                            if table_y0 <= y0 <= table_y1 or table_y0 <= y1 <= table_y1: # Checks top or bottom of the text block falls inside a table’s vertical area 
                                 # Insert table if not already added
                                 if (table_y0, table_y1) in tables_map:
                                     content_parts.append(f"\n{tables_map[(table_y0, table_y1)]}\n")
-                                    del tables_map[(table_y0, table_y1)]  # Mark as used
+                                    del tables_map[(table_y0, table_y1)]  # Remove it from tables_map to avoid duplicates
                                 is_in_table = True
                                 break
                         
@@ -231,9 +217,9 @@ class PDFLoader:
                     if not final_text.strip():
                         continue
                     
-                    # Generate deterministic ID
+                    # generating a deterministic (The same input will always produce the same ID), repeatable unique ID for a document chunk
                     chunk_id = hashlib.md5(
-                        f"{self.file_path.name}_{page_num}".encode()
+                        f"{self.file_path.name}_{page_num}".encode() # Convert string → bytes
                     ).hexdigest()
                     
                     # Create Document with enriched metadata
@@ -260,21 +246,3 @@ class PDFLoader:
         return docs
 
 
-# --- Smoke Test ---
-if __name__ == "__main__":
-    import sys
-    
-    if len(sys.argv) > 1:
-        loader = PDFLoader(Path(sys.argv[1]))
-        documents = loader.load()
-        
-        print(f"\n✅ Extracted {len(documents)} documents")
-        print("\n📋 First document (TOC):")
-        print(documents[0].content[:500])
-        
-        if len(documents) > 1:
-            print(f"\n📄 Sample page (Page {documents[1].page}):")
-            print(documents[1].content[:300])
-            print(f"\nMetadata: {documents[1].metadata}")
-    else:
-        print("Usage: python -m src.ingestion.loader <path_to_pdf>")

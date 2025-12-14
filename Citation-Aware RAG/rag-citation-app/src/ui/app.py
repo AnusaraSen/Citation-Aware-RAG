@@ -9,16 +9,17 @@ sys.path.insert(0, str(project_root))
 from src.retrieval.engine import RAGEngine
 from src.ingestion.pipeline import IngestionPipeline
 from src.storage.vector_store import VectorStore
+from src.core.config import Config
 
 # Page Configuration
 st.set_page_config(
-    page_title="RAG Architect | Citation-Aware System",
-    page_icon="📘",
+    page_title=Config.PAGE_TITLE,
+    page_icon=Config.PAGE_ICON,
     layout="wide"
 )
 
 # Constants
-DATA_FOLDER = Path("data")
+DATA_FOLDER = Config.DATA_DIR
 DATA_FOLDER.mkdir(exist_ok=True)
 
 def initialize_state():
@@ -37,7 +38,7 @@ def initialize_state():
         st.session_state.processed_files = set()
     
     if "use_hyde" not in st.session_state:
-        st.session_state.use_hyde = False
+        st.session_state.use_hyde = Config.USE_HYDE
 
 def get_db_stats():
     """
@@ -305,7 +306,7 @@ def render_chat():
     """
     Main chat interface with citation support
     """
-    st.title("📘 Citation-Aware RAG Assistant")
+    st.title(f"{Config.PAGE_ICON} Citation-Aware RAG Assistant")
     
     # Display conversation history
     for message in st.session_state.messages:
