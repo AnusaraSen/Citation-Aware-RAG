@@ -7,7 +7,6 @@ from src.core.types import Document
 
 class AdvancedRAGModifiers:
     """
-    Implements 'Advanced RAG' techniques from the technical report:
     1. HyDE (Hypothetical Document Embeddings) [Pre-Retrieval]
     2. Cross-Encoder Reranking [Post-Retrieval]
     """
@@ -15,17 +14,14 @@ class AdvancedRAGModifiers:
     def __init__(self, rerank_model: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"):
         """
         Initialize the Reranker.
-        We use a lightweight MS-MARCO model optimized for CPU/Edge Inference.
-        It fits easily on your RTX 4050 alongside Llama 3.
         """
         print(f"⚖️ Loading Cross-Encoder: {rerank_model}...")
         self.reranker = CrossEncoder(rerank_model)
 
-    def generate_hyde_doc(self, query: str, llm: BaseChatModel) -> str:
+    def generate_hyde_doc(self, query: str, llm: BaseChatModel) -> str: #Hypothetical Document Embedding
         """
         Implements HyDE: Uses the LLM to hallucinate a theoretical answer.
-        This 'fake' answer often has better vector similarity to the real docs 
-        than the raw user question does.
+        
         """
         hyde_prompt = ChatPromptTemplate.from_template("""
         You are a generic AI assistant. 
@@ -56,7 +52,7 @@ class AdvancedRAGModifiers:
         if not docs:
             return []
             
-        # Prepare pairs for the model: [[Query, Doc1], [Query, Doc2], ...]
+        # Creates a list of pairs where every single document is paired with the user's question.
         pairs = [[query, d.content] for d in docs]
         
         # Get scores
@@ -67,7 +63,7 @@ class AdvancedRAGModifiers:
             doc.metadata["rerank_score"] = float(scores[i])
             
         # Sort by score descending
-        # We zip docs and scores, sort, and unzip
+        # We zip docs and scores, sort, and unzip (Glues the document list and score list together.)
         scored_docs = sorted(zip(docs, scores), key=lambda x: x[1], reverse=True)
         
         # Select Top K

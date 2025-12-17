@@ -29,8 +29,7 @@ ENV PYTHONPATH=/app
 # Disable ChromaDB telemetry to speed up boot
 ENV ANONYMIZED_TELEMETRY=False
 
-# 8. Healthcheck (Professional Engineering)
-# Tells Docker if the app is actually alive
+# 8. Healthcheck
 HEALTHCHECK CMD curl --fail http://localhost:8501/_stcore/health || exit 1
 
 # 9. Expose Port

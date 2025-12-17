@@ -9,12 +9,10 @@ from src.retrieval.modifiers import AdvancedRAGModifiers
 from src.core.types import Document
 
 class RAGEngine:
-    """
-    Professional RAG Engine with HyDE and Reranking.
-    """
     
-    def __init__(self, model_name: Optional [str] = None):
-        # Use Config values
+    
+    def __init__(self, model_name: Optional[str] = None): #  if model_name is None the constructor falls back to Config.MODEL_NAME
+        
         if model_name is None:
             model_name = Config.MODEL_NAME
             
@@ -53,17 +51,12 @@ class RAGEngine:
 === YOUR ANSWER ===
 Provide a clear, well-structured answer with citations:""")
             
-        self.chain = self.prompt | self.llm | StrOutputParser()
+        self.chain = self.prompt | self.llm | StrOutputParser() #Composes a runnable LangChain pipeline: prompt template → LLM → output parser.
 
     def _format_context(self, docs: List[Document]) -> str:
-        """
-        Format documents with XML tags for structural clarity.
         
-        Uses explicit XML structure to help Llama 3 distinguish between:
-        - System instructions (outside tags)
-        - Retrieved knowledge (inside tags)
-        - Document boundaries (individual <doc> elements)
-        """
+        """Format retrieved documents into XML-style <doc> blocks for the LLM."""
+
         formatted = []
         for idx, doc in enumerate(docs, 1):
             # Include rerank score for transparency
@@ -74,8 +67,8 @@ Provide a clear, well-structured answer with citations:""")
             # Add document index for easier reference
             entry = (
                 f'<doc id="{idx}" source="{doc.source}" page="{doc.page}"{score_info}>\n'
-                f"{doc.content.strip()}\n"
-                f"</doc>"
+                f"{doc.content.strip()}\n" # .strip() cuts unnecessary leading/trailing whitespace.whitespace.
+                f"</doc>" # Structured tags like <doc id="1"> helps the AI understand exactly where one document ends and the next begins.
             )
             formatted.append(entry)
         
@@ -119,9 +112,6 @@ Provide a clear, well-structured answer with citations:""")
         
         # --- Step 4: Context Formatting ---
         context_str = self._format_context(top_docs)
-        
-        # Debug: Check context length
-        print(f"   [Debug] Context length: {len(context_str)} chars, {len(top_docs)} documents")
         
         # --- Step 5: Generation ---
         print("   [Generation] Invoking LLM with structured prompt...")

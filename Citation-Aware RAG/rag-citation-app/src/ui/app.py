@@ -136,6 +136,7 @@ def process_batch(uploaded_files):
                 expanded=True
             )
 
+
 def reset_system():
     """
     Complete system reset: clears chat history and wipes vector database.
@@ -161,6 +162,7 @@ def reset_system():
         except Exception as e:
             status.update(label="❌ Reset Failed", state="error")
             st.error(f"Reset error: {str(e)}")
+
 
 def delete_document(source_filename: str):
     """
@@ -245,7 +247,7 @@ def render_sidebar():
                         st.caption(f"📄 {source}")
                     with col2:
                         # Unique key for each delete button
-                        if st.button("🗑️", key=f"delete_{source}", help=f"Delete {source}"):
+                        if st.button("Delete", key=f"delete_{source}", help=f"Delete {source}"):
                             # Confirmation via session state
                             if f"confirm_delete_{source}" not in st.session_state:
                                 st.session_state[f"confirm_delete_{source}"] = True

@@ -140,7 +140,7 @@ class VectorStore:
                 metadata=metadata
             )
             
-            self.doc_map[doc_id] = doc
+            self.doc_map[doc_id] = doc # When BM25 points to a result, this map instantly grab the actual content.
             documents.append(doc)
             # Simple tokenization for BM25 (split by space)
             tokenized_corpus.append(content.lower().split())
@@ -234,7 +234,7 @@ class VectorStore:
         # We return a dummy score of 1.0 because the relative order is what matters.
         docs = self.hybrid_search(query, k)
         return [(d, 1.0) for d in docs]
-
+   
     def clear(self):
         """
         Legacy clear method. Deprecated - use reset=True in __init__ instead.
@@ -245,6 +245,7 @@ class VectorStore:
             print("Database collection cleared.")
         except Exception as e:
             print(f"Failed to clear collection: {e}")
+    
 
     def get_document_count(self) -> int:
         """Returns the number of documents in the vector store."""
@@ -263,16 +264,6 @@ class VectorStore:
         """
         Delete all document chunks from a specific source file.
         
-        Args:
-            source_filename: The filename of the source document (e.g., "report.pdf")
-        
-        Returns:
-            Number of chunks deleted
-        
-        Implementation:
-        - Queries all documents with matching source metadata
-        - Deletes them by ID from ChromaDB
-        - Rebuilds BM25 index to stay in sync
         """
         try:
             # Get all documents from the collection
@@ -306,30 +297,3 @@ class VectorStore:
             print(f"❌ Error deleting source '{source_filename}': {str(e)}")
             raise
             
-if __name__ == "__main__":
-    # Check Vector Store Status
-    store = VectorStore()
-    
-    doc_count = store.get_document_count()
-    print(f"\n📊 Vector Store Status:")
-    print(f"   Total Documents: {doc_count}")
-    
-    if doc_count > 0:
-        sources = store.list_sources()
-        print(f"   Sources Indexed: {len(sources)}")
-        for source in sources:
-            print(f"     - {source}")
-        
-        # Test a search
-        print("\n🔍 Testing Search:")
-        test_query = "What is RAG?"
-        results = store.hybrid_search(test_query, k=3)
-        print(f"   Query: '{test_query}'")
-        print(f"   Results Found: {len(results)}")
-        if results:
-            print(f"\n   Top Result:")
-            print(f"     Source: {results[0].source} (Page {results[0].page})")
-            print(f"     Content: {results[0].content[:200]}...")
-    else:
-        print("   ⚠️ Vector store is empty!")
-        print("   Run: python -m src.ingestion.reingest")
