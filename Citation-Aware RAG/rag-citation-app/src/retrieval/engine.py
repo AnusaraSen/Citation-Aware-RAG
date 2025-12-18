@@ -1,5 +1,7 @@
 from typing import List, Dict, Any, Optional
 from pathlib import Path
+import time
+import functools
 from langchain_community.chat_models.ollama import ChatOllama
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
@@ -7,6 +9,17 @@ from src.core.config import Config
 from src.storage.vector_store import VectorStore
 from src.retrieval.modifiers import AdvancedRAGModifiers 
 from src.core.types import Document
+
+def measure_performance(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        duration = end_time - start_time
+        print(f"⏱️ [Performance] {func.__name__} took {duration:.2f} seconds")
+        return result
+    return wrapper
 
 class RAGEngine:
     
