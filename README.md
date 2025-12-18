@@ -5,7 +5,6 @@
 > Built to demonstrate real‑world AI engineering practices beyond tutorial‑level RAG.
 
 ![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)
-![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)
 ![LangChain](https://img.shields.io/badge/LangChain-Orchestration-green)
 ![ChromaDB](https://img.shields.io/badge/VectorDB-ChromaDB-purple)
 ![Ollama](https://img.shields.io/badge/LLM-Llama3.2--3B%20%7C%20Local-orange)
@@ -61,17 +60,10 @@ This project was built to **solve those failures explicitly** and to serve as a 
 | Vector Store  | ChromaDB (HNSW, persistent)                 |
 | Ingestion     | PyMuPDF (Fitz) – layout-aware block parsing |
 | Frontend      | Streamlit                                   |
+| DevOps        | Docker and Docker compose                   |
 | Evaluation    | RAGAS + custom deterministic tests          |
 
-------|-----------|
-| Orchestration | LangChain + custom Python modules |
-| LLM Inference | Llama 3 (Ollama for local, Groq for low‑latency prod) |
-| Embeddings | Sentence‑Transformers |
-| Reranking | `ms-marco-MiniLM-L-6-v2` (Cross‑Encoder) |
-| Vector Store | ChromaDB (HNSW, persistent) |
-| Ingestion | PyMuPDF (Fitz) with coordinate filtering |
-| Frontend | Streamlit |
-| DevOps | Docker & Docker Compose |
+
 
 ---
 
