@@ -5,7 +5,6 @@
 > Built to demonstrate real‑world AI engineering practices beyond tutorial‑level RAG.
 
 ![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)
-![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)
 ![LangChain](https://img.shields.io/badge/LangChain-Orchestration-green)
 ![ChromaDB](https://img.shields.io/badge/VectorDB-ChromaDB-purple)
 ![Ollama](https://img.shields.io/badge/LLM-Llama3.2--3B%20%7C%20Local-orange)
