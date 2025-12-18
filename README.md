@@ -1,9 +1,10 @@
-#  Citation‑Aware Retrieval‑Augmented Generation (RAG) System
+# 🧠 Citation‑Aware Retrieval‑Augmented Generation (RAG) System
 
 > **Production‑oriented RAG architecture focused on factual grounding, citation enforcement, and retrieval precision.**
 >
 > Built to demonstrate real‑world AI engineering practices beyond tutorial‑level RAG.
 
+![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)
 ![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)
 ![LangChain](https://img.shields.io/badge/LangChain-Orchestration-green)
 ![ChromaDB](https://img.shields.io/badge/VectorDB-ChromaDB-purple)
@@ -62,6 +63,15 @@ This project was built to **solve those failures explicitly** and to serve as a 
 | Frontend      | Streamlit                                   |
 | Evaluation    | RAGAS + custom deterministic tests          |
 
+------|-----------|
+| Orchestration | LangChain + custom Python modules |
+| LLM Inference | Llama 3 (Ollama for local, Groq for low‑latency prod) |
+| Embeddings | Sentence‑Transformers |
+| Reranking | `ms-marco-MiniLM-L-6-v2` (Cross‑Encoder) |
+| Vector Store | ChromaDB (HNSW, persistent) |
+| Ingestion | PyMuPDF (Fitz) with coordinate filtering |
+| Frontend | Streamlit |
+| DevOps | Docker & Docker Compose |
 
 ---
 
@@ -91,7 +101,7 @@ LLM Generation (Citation‑Constrained)
 
 * **Layout-Aware Parsing:** Extracts text blocks with coordinates instead of linear text
 * **Noise Removal:** Headers and footers filtered via Y-axis thresholds
-* **Chunking:** Semantic chunking to preserve meaning boundaries, with controlled overlap to maintain cross-section context
+* **Chunking:** **Semantic chunking** to preserve meaning boundaries, with controlled overlap to maintain cross-section context
 * **Metadata Injection:** Every chunk includes:
 
   ```python
@@ -201,15 +211,31 @@ poetry run streamlit run src/ui/app.py
 
 ---
 
+## 🔐 Privacy-First Design Choice
+
+This system intentionally uses a **fully local LLM (Llama 3.2 – 3B via Ollama)**.
+
+### Why Local Inference?
+
+* 📄 **Sensitive Inputs:** Designed for company policies, internal documentation, and legal content
+* 🔒 **Data Residency:** No documents, embeddings, or queries leave the local machine
+* 🛡️ **Compliance-Friendly:** Suitable for environments with strict privacy or regulatory constraints
+
+This makes the system applicable to **enterprise, legal, and internal-knowledge settings** where cloud-based LLM APIs are not acceptable.
+
+> **Deployment Note:** This architecture is suitable for **on‑prem or air‑gapped environments** in regulated industries such as **finance, healthcare, and legal services**.
+
+---
+
 ## ⚠️ Known Limitations & Trade-offs
 
-* **Latency:** Running a local 3B model prioritizes privacy and reproducibility over speed
+* **Latency:** Local inference prioritizes privacy and data control over response time
 * **Single-Node Execution:** No distributed ingestion or retrieval
-* **CPU-Bound PDF Parsing:** Layout analysis is computationally expensive
+* **CPU/GPU Constraints:** Performance bound by local hardware
 
 ### Engineering Rationale
 
-These trade-offs were made deliberately to focus on **correctness, grounding, and evaluation discipline** rather than raw throughput.
+These trade-offs were made deliberately to emphasize **privacy, factual grounding, and evaluation rigor** over raw throughput.
 
 ---
 
