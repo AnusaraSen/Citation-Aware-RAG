@@ -178,8 +178,8 @@ Results are exported to `tests/rag_custom_evaluation_report.csv` for auditabilit
 ### Option 1: Docker (Recommended)
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/citation-aware-rag.git
-cd citation-aware-rag
+git clone https://github.com/AnusaraSen/Citation-Aware-Rag.git
+cd Citation-Aware RAG\rag-citation-app
 docker-compose up --build
 ```
 
