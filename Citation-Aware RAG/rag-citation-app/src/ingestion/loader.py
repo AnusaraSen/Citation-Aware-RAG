@@ -36,7 +36,7 @@ class PDFLoader:
         for block in blocks:
             x0, y0, x1, y1, text, block_no, block_type = block
             
-            # Only process text blocks (type 0)
+            # Only process text blocks (type 0) text
             if block_type != 0:
                 continue
             
@@ -76,7 +76,7 @@ class PDFLoader:
                 # Convert to Markdown
                 markdown_lines = []
                 
-                # akes the first row of table_data (assumed to be the header row) and converts it to a Markdown table header plus the required separator row of column dashes.
+                # Takes the first row of table_data (assumed to be the header row) and converts it to a Markdown table header plus the required separator row of column dashes.
                 if len(table_data) > 0:
                     header = table_data[0]
                     markdown_lines.append("| " + " | ".join(str(cell) if cell else "" for cell in header) + " |")
@@ -157,7 +157,7 @@ class PDFLoader:
                     
                     # Extract text blocks with proper type casting
                     raw_blocks = page.get_text("blocks")
-                    # Cast to our typed structure
+                    # Cast to typed structure
 
                     '''
                            x0 , y0 - Top-left corner of the text block

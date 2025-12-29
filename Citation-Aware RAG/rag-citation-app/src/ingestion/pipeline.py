@@ -35,7 +35,7 @@ class IngestionPipeline:
             print("   ⚠️ Warning: No text extracted. Skipping.")
             return []
         
-        # OSeparate TOC from regular pages for different processing
+        # Separate TOC from regular pages for different processing
         toc_docs = [doc for doc in raw_docs if doc.metadata.get("is_toc", False)]
         page_docs = [doc for doc in raw_docs if not doc.metadata.get("is_toc", False)]
         
